@@ -1,13 +1,14 @@
 import { Logger, Module } from '@nestjs/common';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { OrmModule } from './modules/orm.module';
-import { UserController } from './modules/user/user.controller';
 import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { CalendarModule } from './modules/calendar/calendar.module';
 
 @Module({
-  imports: [OrmModule, UserModule],
-  controllers: [AppController, UserController],
+  imports: [MikroOrmModule.forRoot(), UserModule, AuthModule, CalendarModule],
+  controllers: [AppController],
   providers: [AppService, Logger],
 })
 export class AppModule {}

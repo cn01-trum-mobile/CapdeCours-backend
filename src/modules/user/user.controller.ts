@@ -1,39 +1,34 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { EntityRepository, QueryOrder, wrap, EntityManager } from '@mikro-orm/postgresql';
 import { InjectRepository } from '@mikro-orm/nestjs';
+import { MongoEntityRepository, MongoEntityManager, ObjectId } from '@mikro-orm/mongodb';
 import { User } from '../../entities/User';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 
+@ApiTags('user')
 @Controller('user')
 export class UserController {
   constructor(
-    @InjectRepository(User) private readonly UserRepository: EntityRepository<User>,
-    private readonly em: EntityManager,
-  ) { }
+    @InjectRepository(User) private readonly userRepository: MongoEntityRepository<User>,
+    private readonly em: MongoEntityManager, // dùng để persist/remove
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List up to 20 users' })
   @ApiResponse({ status: 200, description: 'Found users', type: [UserResponseDto] })
   async find() {
-    const users = await this.UserRepository.findAll({
-      populate: ['name', 'age'],
-      orderBy: { name: QueryOrder.DESC },
-      limit: 20,
-    });
-    return users.map(e => new UserResponseDto(e));
+    const users = await this.userRepository.find({}, { limit: 20, orderBy: { name: 'DESC' } });
+    return users.map(user => new UserResponseDto(user));
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a single user by ID' })
   @ApiResponse({ status: 200, description: 'The found user', type: UserResponseDto })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const user = await this.UserRepository.findOne(id, {
-      populate: ['name', 'age'],
-    });
+  async findOne(@Param('id') id: string) {
+    const user = await this.userRepository.findOne({ _id: new ObjectId(id) });
     if (!user) {
       throw new HttpException(`User with ID ${id} not found`, HttpStatus.NOT_FOUND);
     }
@@ -45,9 +40,8 @@ export class UserController {
   @ApiResponse({ status: 201, description: 'User created successfully', type: UserResponseDto })
   @ApiResponse({ status: 400, description: 'Invalid input' })
   async create(@Body() createUserDto: CreateUserDto) {
-    const user = this.UserRepository.create(createUserDto);
-    await this.em.flush();
-
+    const user = this.userRepository.create(createUserDto);
+    await this.em.persistAndFlush(user); // lưu thông qua EntityManager
     return new UserResponseDto(user);
   }
 
@@ -56,13 +50,14 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'User updated successfully', type: UserResponseDto })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 400, description: 'Invalid input' })
-  async update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
-    const user = await this.UserRepository.findOne(id);
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.findOne({ _id: new ObjectId(id) });
     if (!user) {
       throw new HttpException(`User with ID ${id} not found`, HttpStatus.NOT_FOUND);
     }
-    wrap(user).assign(updateUserDto);
-    await this.em.flush();
+
+    Object.assign(user, updateUserDto);
+    await this.em.persistAndFlush(user); // update thông qua EntityManager
 
     return new UserResponseDto(user);
   }
@@ -71,12 +66,12 @@ export class UserController {
   @ApiOperation({ summary: 'Delete an existing user' })
   @ApiResponse({ status: 204, description: 'User deleted successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async delete(@Param('id', ParseIntPipe) id: number) {
-    const user = await this.UserRepository.findOne(id, { populate: [] });
+  async delete(@Param('id') id: string) {
+    const user = await this.userRepository.findOne({ _id: new ObjectId(id) });
     if (!user) {
       throw new HttpException(`User with ID ${id} not found`, HttpStatus.NOT_FOUND);
     }
-    await this.em.removeAndFlush(user);
+
+    await this.em.removeAndFlush(user); // xóa thông qua EntityManager
   }
 }

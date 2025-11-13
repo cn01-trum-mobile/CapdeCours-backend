@@ -57,6 +57,60 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Google OAuth login
+
+Configure the following environment variables before starting the server:
+
+- `GOOGLE_CLIENT_ID` – OAuth client ID created in the Google Cloud console.
+- `GOOGLE_CLIENT_SECRET` – OAuth client secret paired with the client ID.
+- `GOOGLE_REDIRECT_URI` – Redirect URI registered with Google (can be overridden per request).
+- `GOOGLE_LOGIN_SUCCESS_REDIRECT` *(optional)* – Where to redirect after a successful Google login (JWT appended as query parameters).
+- `JWT_SECRET` – Secret used to sign JWTs that are returned to third parties.
+- `JWT_EXPIRES_IN` *(optional)* – Token lifetime in seconds (defaults to `3600`).
+- `MONGO_URI` *(optional)* – MongoDB connection string (defaults to `mongodb://localhost:27017`).
+
+### Endpoint
+
+```
+POST /auth/google
+```
+
+```json
+{
+  "code": "4/0AX4XfW...",
+  "redirectUri": "http://localhost:3000/auth/callback"
+}
+```
+
+The endpoint exchanges the Google authorization code, persists/updates the user in the database, and responds with a JWT and user profile details.
+
+### Redirect-based login flow
+
+- `GET /auth/google` – backend redirects the browser to the Google consent screen.
+- `GET /auth/google/callback` – Google redirects here after consent. The backend exchanges the code, stores the tokens, and:
+  - redirects to `GOOGLE_LOGIN_SUCCESS_REDIRECT`/`LOGIN_SUCCESS_REDIRECT` (if configured) with the JWT in the query string, or
+  - returns the JSON payload when no redirect target is configured.
+
+### Fetch Google Calendar events
+
+```
+GET /calendar/events
+```
+
+Headers:
+
+```
+Authorization: Bearer <jwt-token-returned-from-/auth/google>
+```
+
+Optional query params:
+
+- `calendarId` (defaults to `primary`)
+- `maxResults` (defaults to `10`)
+- `timeMin` / `timeMax` (ISO 8601 strings to bound the returned events)
+
+The API returns the upcoming events fetched from Google Calendar on behalf of the authenticated user.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
