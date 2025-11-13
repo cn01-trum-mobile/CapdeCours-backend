@@ -1,7 +1,19 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { EntityRepository, QueryOrder, wrap, EntityManager } from '@mikro-orm/postgresql';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { MongoEntityRepository, MongoEntityManager, ObjectId } from '@mikro-orm/mongodb';
 import { Note } from '../../entities/Note';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
@@ -12,24 +24,26 @@ import { NoteResponseDto } from './dto/note-response.dto';
 export class NoteController {
   constructor(
     @InjectRepository(Note)
-    private readonly noteRepository: MongoEntityRepository<Note>,
-    private readonly em: MongoEntityManager,
+    private readonly noteRepository: EntityRepository<Note>,
+    private readonly em: EntityManager,
   ) {}
 
   @Get()
   @ApiOperation({ summary: 'List up to 20 notes' })
   @ApiResponse({ status: 200, description: 'Found notes', type: [NoteResponseDto] })
   async find() {
-    const notes = await this.noteRepository.find({}, { limit: 20, orderBy: { updatedAt: 'DESC' } });
-    return notes.map(note => new NoteResponseDto(note));
+    const notes = await this.noteRepository.findAll({
+      limit: 20,
+    });
+    return notes.map((n) => new NoteResponseDto(n));
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a single note by ID' })
   @ApiResponse({ status: 200, description: 'The found note', type: NoteResponseDto })
   @ApiResponse({ status: 404, description: 'Note not found' })
-  async findOne(@Param('id') id: string) {
-    const note = await this.noteRepository.findOne({ _id: new ObjectId(id) });
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const note = await this.noteRepository.findOne(id);
     if (!note) {
       throw new HttpException(`Note with ID ${id} not found`, HttpStatus.NOT_FOUND);
     }
@@ -51,14 +65,14 @@ export class NoteController {
   @ApiResponse({ status: 200, description: 'Note updated successfully', type: NoteResponseDto })
   @ApiResponse({ status: 404, description: 'Note not found' })
   @ApiResponse({ status: 400, description: 'Invalid input' })
-  async update(@Param('id') id: string, @Body() updateNoteDto: UpdateNoteDto) {
-    const note = await this.noteRepository.findOne({ _id: new ObjectId(id) });
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateNoteDto: UpdateNoteDto) {
+    const note = await this.noteRepository.findOne(id);
     if (!note) {
       throw new HttpException(`Note with ID ${id} not found`, HttpStatus.NOT_FOUND);
     }
 
-    Object.assign(note, updateNoteDto);
-    await this.em.persistAndFlush(note);
+    wrap(note).assign(updateNoteDto);
+    await this.em.flush();
 
     return new NoteResponseDto(note);
   }
@@ -67,8 +81,9 @@ export class NoteController {
   @ApiOperation({ summary: 'Delete an existing note' })
   @ApiResponse({ status: 204, description: 'Note deleted successfully' })
   @ApiResponse({ status: 404, description: 'Note not found' })
-  async delete(@Param('id') id: string) {
-    const note = await this.noteRepository.findOne({ _id: new ObjectId(id) });
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async delete(@Param('id', ParseIntPipe) id: number) {
+    const note = await this.noteRepository.findOne(id);
     if (!note) {
       throw new HttpException(`Note with ID ${id} not found`, HttpStatus.NOT_FOUND);
     }

@@ -2,8 +2,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { User } from '../../../entities/User';
 
 export class UserResponseDto {
-  @ApiProperty({ example: '64f1c1d2e4b1c4f5d6a7b8c9', description: 'The unique ID of the user' })
-  id: string;
+  @ApiProperty({ example: 1, description: 'The unique ID of the user' })
+  id: number;
 
   @ApiProperty({ example: 'John Doe', description: 'The name of the user' })
   name: string;

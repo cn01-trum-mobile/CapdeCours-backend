@@ -1,13 +1,9 @@
-import { Entity, Property, Opt, PrimaryKey, SerializedPrimaryKey } from '@mikro-orm/core';
-import { ObjectId } from '@mikro-orm/mongodb';
+import { Entity, Property, Opt, PrimaryKey } from '@mikro-orm/core';
 
 @Entity()
 export class User {
   @PrimaryKey()
-  _id!: ObjectId;
-
-  @SerializedPrimaryKey()
-  id!: string;
+  id!: number;
 
   @Property()
   createdAt: Date & Opt = new Date();
@@ -20,7 +16,7 @@ export class User {
 
   @Property({ nullable: true })
   age?: number;
-  
+
   constructor(name: string, age?: number) {
     this.name = name;
     this.age = age;
