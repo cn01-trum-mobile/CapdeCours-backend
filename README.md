@@ -1,152 +1,130 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 📘 PROJECT NAME
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+> Backend API cho **CapdeCours** xây dựng bằng **NestJS**,
+> **MikroORM** và **PostgreSQL**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+------------------------------------------------------------------------
 
-## Description
+## 📋 Mục lục
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+-   Giới thiệu
+-   Công nghệ sử dụng
+-   Yêu cầu hệ thống
+-   Cài đặt & Cấu hình
+-   Chạy Database với Docker
+-   Khởi chạy ứng dụng
+-   Tài liệu API (Swagger)
+-   Test API có xác thực (JWT)
+-   Cấu trúc thư mục
+-   Troubleshooting
 
-## Project setup
+------------------------------------------------------------------------
 
-```bash
-$ npm install
+## 🚀 Giới thiệu
+
+Dự án cung cấp các RESTful API phục vụ cho **việc đăng nhập và lưu lịch**.
+
+Hệ thống sử dụng kiến trúc Module của NestJS, MikroORM để thao tác với
+PostgreSQL và JWT cho xác thực người dùng.
+
+------------------------------------------------------------------------
+
+## 🧩 Công nghệ sử dụng
+
+-   NestJS
+-   TypeScript
+-   PostgreSQL
+-   MikroORM
+-   JWT (Passport)
+-   Swagger (OpenAPI)
+-   Docker & Docker Compose
+
+------------------------------------------------------------------------
+
+## 🛠 Yêu cầu hệ thống
+
+-   Node.js v18+
+-   Docker Desktop
+-   Postman (tuỳ chọn)
+
+------------------------------------------------------------------------
+
+## ⚙️ Cài đặt & Cấu hình
+
+### Cài dependencies
+
+``` bash
+npm install
 ```
 
-## Compile and run the project
+### Cấu hình .env
+Xem thêm trong file `.env.example`
 
-```bash
-# development
-$ npm run start
+------------------------------------------------------------------------
 
-# watch mode
-$ npm run start:dev
+## 🐳 Chạy Database với Docker
 
-# production mode
-$ npm run start:prod
+``` bash
+docker-compose up -d
 ```
 
-## Run tests
+### Migration
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+``` bash
+npx mikro-orm migration:create
+npx mikro-orm migration:up
 ```
 
-## Google OAuth login
+------------------------------------------------------------------------
 
-Configure the following environment variables before starting the server:
+## ▶️ Khởi chạy ứng dụng
 
-- `GOOGLE_CLIENT_ID` – OAuth client ID created in the Google Cloud console.
-- `GOOGLE_CLIENT_SECRET` – OAuth client secret paired with the client ID.
-- `GOOGLE_REDIRECT_URI` – Redirect URI registered with Google (can be overridden per request).
-- `GOOGLE_LOGIN_SUCCESS_REDIRECT` *(optional)* – Where to redirect after a successful Google login (JWT appended as query parameters).
-- `JWT_SECRET` – Secret used to sign JWTs that are returned to third parties.
-- `JWT_EXPIRES_IN` *(optional)* – Token lifetime in seconds (defaults to `3600`).
-- `MONGO_URI` *(optional)* – MongoDB connection string (defaults to `mongodb://localhost:27017`).
+### Development
 
-### Endpoint
-
-```
-POST /auth/google
+``` bash
+npm run start:dev
 ```
 
-```json
-{
-  "code": "4/0AX4XfW...",
-  "redirectUri": "http://localhost:3000/auth/callback"
-}
+### Production
+
+``` bash
+npm run build
+npm run start:prod
 ```
 
-The endpoint exchanges the Google authorization code, persists/updates the user in the database, and responds with a JWT and user profile details.
+Server chạy tại http://localhost:3000
 
-### Redirect-based login flow
+------------------------------------------------------------------------
 
-- `GET /auth/google` – backend redirects the browser to the Google consent screen.
-- `GET /auth/google/callback` – Google redirects here after consent. The backend exchanges the code, stores the tokens, and:
-  - redirects to `GOOGLE_LOGIN_SUCCESS_REDIRECT`/`LOGIN_SUCCESS_REDIRECT` (if configured) with the JWT in the query string, or
-  - returns the JSON payload when no redirect target is configured.
+## 📚 Swagger
 
-### Fetch Google Calendar events
+Truy cập: http://localhost:3000/api
 
-```
-GET /calendar/events
-```
+------------------------------------------------------------------------
 
-Headers:
+## 🔐 Test API JWT
 
-```
-Authorization: Bearer <jwt-token-returned-from-/auth/google>
-```
+1.  POST /auth/login → lấy token
+2.  Swagger → Authorize → Bearer `<token>`{=html}
+3.  Gọi API bảo mật (VD: GET /user/profile)
 
-Optional query params:
+------------------------------------------------------------------------
 
-- `calendarId` (defaults to `primary`)
-- `maxResults` (defaults to `10`)
-- `timeMin` / `timeMax` (ISO 8601 strings to bound the returned events)
+## 📂 Cấu trúc thư mục
 
-The API returns the upcoming events fetched from Google Calendar on behalf of the authenticated user.
+    src/
+    ├── modules/
+    │   ├── auth/
+    │   ├── user/
+    │   └── orm.module.ts
+    ├── entities/
+    ├── main.ts
+    └── app.module.ts
 
-## Deployment
+------------------------------------------------------------------------
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 🐛 Troubleshooting
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+-   ECONNREFUSED 5432 → DB chưa chạy
+-   401 Unauthorized → Token sai/hết hạn
+-   relation does not exist → Chưa chạy migration
