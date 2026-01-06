@@ -1,15 +1,23 @@
 import { Logger, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { OrmModule } from './modules/orm.module';
-import { UserController } from './modules/user/user.controller';
 import { UserModule } from './modules/user/user.module';
-import { NoteController } from './modules/note/note.controller';
-import { NoteModule } from './modules/note/note.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
-  imports: [OrmModule, UserModule, NoteModule],
-  controllers: [AppController, UserController , NoteController],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, 
+      envFilePath: '.env',
+    }),
+
+    OrmModule, 
+    UserModule,
+    AuthModule, 
+  ],
+  controllers: [AppController], 
   providers: [AppService, Logger],
 })
 export class AppModule {}

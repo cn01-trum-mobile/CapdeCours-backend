@@ -5,11 +5,17 @@ export class UserResponseDto {
   @ApiProperty({ example: 1, description: 'The unique ID of the user' })
   id: number;
 
-  @ApiProperty({ example: 'John Doe', description: 'The name of the user' })
-  name: string;
+  @ApiProperty({
+    example: 'johndoe123',
+    description: 'The username of the user',
+  })
+  username: string;
 
-  @ApiPropertyOptional({ example: 30, description: 'The age of the user (optional)' })
-  age?: number;
+  @ApiPropertyOptional({
+    example: 'John Doe',
+    description: 'The name of the user (optional)',
+  })
+  name?: string;
 
   @ApiProperty({
     description: 'The date and time the user was created',
@@ -26,7 +32,7 @@ export class UserResponseDto {
   constructor(user: User) {
     this.id = user.id;
     this.name = user.name;
-    this.age = user.age;
+    this.username = user.username;
     this.createdAt = user.createdAt;
     this.updatedAt = user.updatedAt;
   }

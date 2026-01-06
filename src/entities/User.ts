@@ -1,4 +1,4 @@
-import { Entity, Property, Opt, PrimaryKey } from '@mikro-orm/core';
+import { Entity, Property, Opt, PrimaryKey, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class User {
@@ -11,14 +11,19 @@ export class User {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date & Opt = new Date();
 
+  @Property({nullable: true})
+  name?: string;
+  
   @Property()
-  name: string;
+  @Unique()
+  username!: string;
 
-  @Property({ nullable: true })
-  age?: number;
+  @Property({hidden: true})
+  passwordHash!: string;
 
-  constructor(name: string, age?: number) {
+  constructor(username: string, passwordHash: string, name?: string) {
+    this.username = username;
+    this.passwordHash = passwordHash;
     this.name = name;
-    this.age = age;
   }
 }

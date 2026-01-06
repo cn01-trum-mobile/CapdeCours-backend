@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
-import { OrmModule } from '../orm.module';
+import { UserService } from './user.service';
 import { UserController } from './user.controller';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { User } from '../../entities/User';
 
 @Module({
-  imports: [OrmModule],
+  imports: [MikroOrmModule.forFeature([User])],
   controllers: [UserController],
-  providers: [],
+  providers: [UserService],
+  exports: [UserService],
 })
 export class UserModule {}

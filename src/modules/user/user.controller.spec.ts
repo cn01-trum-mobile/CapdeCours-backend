@@ -32,22 +32,18 @@ describe('user controller', () => {
   afterAll(async () => await orm.close(true));
 
   it(`CRUD`, async () => {
-    const res1 = await userController.create({ name: 'a1', age: 20 });
+    const res1 = await userController.create({ name: 'a1', username: 'a1123', password: "123"});
     expect(res1.id).toBeDefined();
     expect(res1.name).toBe('a1');
-    expect(res1.age).toBe(20);
-
-    const id = res1.id;
+    expect(res1.username).toBe('a1123');
 
     const res2 = await userController.find();
     expect(res2).toHaveLength(1);
     expect(res2[0].id).toBeDefined();
     expect(res2[0].name).toBe('a1');
-    expect(res2[0].age).toBe(20);
 
-    const res3 = await userController.update(id, { name: 'a2' });
+    const res3 = await userController.update('a1123', { name: 'a2', password: ""});
     expect(res3.id).toBeDefined();
     expect(res3.name).toBe('a2');
-    expect(res3.age).toBe(20);
   });
 });

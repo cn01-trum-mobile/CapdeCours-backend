@@ -1,4 +1,4 @@
-import 'dotenv/config'; // Very important!
+import 'dotenv/config';
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -49,23 +49,39 @@ async function bootstrap() {
     logger: WinstonModule.createLogger(createWinstonOptions()),
   });
 
-  await app.get(MikroORM).getSchemaGenerator().ensureDatabase();
-  await app.get(MikroORM).getSchemaGenerator().updateSchema();
+  // Kích hoạt CORS
+  app.enableCors();
 
+  // await app.get(MikroORM).getSchemaGenerator().ensureDatabase();
+  // await app.get(MikroORM).getSchemaGenerator().updateSchema();
+
+  // THÊM đoạn này: Tự động chạy migration khi khởi động server
+  const orm = app.get(MikroORM);
+  // Tạo DB nếu chưa có (chỉ check connection/create db, không tạo bảng)
+  if (!await orm.isConnected()) {
+      await orm.connect(); // Đảm bảo kết nối
+  }
+
+  // ValidationPipe
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,
+    transform: true,
   }));
 
+  // Cấu hình Swagger
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Mobile Demo API')
     .setDescription('API documentation for Mobile Application Development demo')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  console.log(`Application is running on: http://localhost:${port}/api`);
 }
 bootstrap();
