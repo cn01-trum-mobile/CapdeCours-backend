@@ -5,19 +5,21 @@ import { AppService } from './app.service';
 import { OrmModule } from './modules/orm.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CalendarModule } from './modules/calendar/calendar.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, 
+      isGlobal: true,
       envFilePath: '.env',
     }),
 
-    OrmModule, 
+    OrmModule,
     UserModule,
-    AuthModule, 
+    AuthModule,
+    CalendarModule,
   ],
-  controllers: [AppController], 
+  controllers: [AppController],
   providers: [AppService, Logger],
 })
 export class AppModule {}

@@ -1,15 +1,16 @@
-import 'dotenv/config'; 
+import 'dotenv/config';
 
 import { Logger } from '@nestjs/common';
 import { defineConfig } from '@mikro-orm/postgresql';
 import { Migrator } from '@mikro-orm/migrations';
 import { User } from './entities/User';
+import { CalendarEvent } from './entities/CalendarEvent';
 
 const logger = new Logger('MikroORM');
 
 export default defineConfig({
-  entities: [User], 
-  
+  entities: [User, CalendarEvent],
+
   dbName: process.env.DB_NAME || 'mobile-demo',
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432', 10),
@@ -21,8 +22,8 @@ export default defineConfig({
 
   extensions: [Migrator],
   migrations: {
-    path: 'dist/migrations',   
-    pathTs: 'src/migrations', 
+    path: 'dist/migrations',
+    pathTs: 'src/migrations',
     glob: '!(*.d).{js,ts}',
   },
 });

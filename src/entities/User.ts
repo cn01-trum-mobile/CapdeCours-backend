@@ -11,14 +11,14 @@ export class User {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date & Opt = new Date();
 
-  @Property({nullable: true})
+  @Property({ nullable: true })
   name?: string;
-  
+
   @Property()
   @Unique()
   username!: string;
 
-  @Property({hidden: true})
+  @Property({ hidden: true })
   passwordHash!: string;
 
   constructor(username: string, passwordHash: string, name?: string) {
