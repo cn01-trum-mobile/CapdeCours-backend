@@ -1,4 +1,4 @@
-# 📘 PROJECT NAME
+# 📘 CAPDECOURS BACKEND
 
 > Backend API cho **CapdeCours** xây dựng bằng **NestJS**,
 > **MikroORM** và **PostgreSQL**.
