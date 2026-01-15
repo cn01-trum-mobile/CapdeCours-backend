@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityRepository } from '@mikro-orm/core'; // Hoặc @mikro-orm/postgresql
+import { EntityRepository, assign } from '@mikro-orm/core'; // Thêm assign ở đây
 import { CalendarEvent } from '../../entities/CalendarEvent';
 import { CreateEventDto } from './dto/create-event.dto';
 import { User } from '../../entities/User';
@@ -12,24 +12,25 @@ export class CalendarService {
     private readonly eventRepo: EntityRepository<CalendarEvent>,
   ) {}
 
-  // Nhận userId thay vì entity User
   async findAll(userId: number) {
-    // MikroORM đủ thông minh để hiểu { user: userId } là tìm theo foreign key
-    return this.eventRepo.find({ user: userId });
+    // MikroORM sẽ tự động lấy cả trường 'repeat' vì nó đã định nghĩa trong Entity
+    return this.eventRepo.find(
+      { user: userId },
+      { orderBy: { startDate: 'ASC' } },
+    );
   }
 
   async create(userId: number, dto: CreateEventDto) {
-    // Quan trọng: Lấy EntityManager để tạo Reference.
-    // Điều này giúp gán user cho event mà KHÔNG cần query database để lấy User Entity.
     const userRef = this.eventRepo
       .getEntityManager()
       .getReference(User, userId);
 
     const event = this.eventRepo.create({
       ...dto,
-      user: userRef, // Gán reference user vào đây
+      user: userRef,
       startDate: new Date(dto.startDate),
       endDate: new Date(dto.endDate),
+      // Trường repeat sẽ tự động được map vào nếu dto.repeat tồn tại
     });
 
     await this.eventRepo.getEntityManager().persist(event).flush();
@@ -37,14 +38,19 @@ export class CalendarService {
   }
 
   async update(id: number, userId: number, dto: Partial<CreateEventDto>) {
-    // Tìm event thuộc về userId này
     const event = await this.eventRepo.findOne({ id, user: userId });
 
     if (!event) throw new NotFoundException('Event not found or access denied');
 
-    if (dto.title) event.title = dto.title;
-    if (dto.notes !== undefined) event.notes = dto.notes;
-    if (dto.location !== undefined) event.location = dto.location;
+    // Sử dụng assign để update hàng loạt các field đơn giản (title, notes, location, repeat)
+    // Những field cần xử lý logic (như convert Date) thì xử lý riêng
+    assign(event, {
+      title: dto.title,
+      notes: dto.notes,
+      location: dto.location,
+      repeat: dto.repeat, // Cập nhật nguyên object JSON
+    });
+
     if (dto.startDate) event.startDate = new Date(dto.startDate);
     if (dto.endDate) event.endDate = new Date(dto.endDate);
 
@@ -53,9 +59,7 @@ export class CalendarService {
   }
 
   async remove(id: number, userId: number) {
-    // Chỉ xóa nếu event đó thuộc về userId đang đăng nhập
     const event = await this.eventRepo.findOne({ id, user: userId });
-
     if (!event) throw new NotFoundException('Event not found or access denied');
 
     await this.eventRepo.getEntityManager().remove(event).flush();

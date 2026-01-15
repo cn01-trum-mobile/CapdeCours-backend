@@ -4,7 +4,24 @@ import {
   IsNotEmpty,
   IsDateString,
   IsOptional,
+  IsEnum,
+  IsNumber,
+  IsObject,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class RepeatRuleDto {
+  @IsEnum(['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'])
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+
+  @IsNumber()
+  interval: number;
+
+  @IsOptional()
+  @IsDateString()
+  until?: string;
+}
 
 export class CreateEventDto {
   @IsString()
@@ -24,4 +41,10 @@ export class CreateEventDto {
   @IsString()
   @IsOptional()
   location?: string;
+
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RepeatRuleDto)
+  repeat?: RepeatRuleDto;
 }

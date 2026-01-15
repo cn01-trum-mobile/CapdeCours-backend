@@ -36,4 +36,13 @@ export class CalendarEvent {
   // SỬA Ở ĐÂY: Thêm & Opt
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date & Opt = new Date();
+
+  @Property({ type: 'json', nullable: true })
+  repeat?: RepeatRule; // Lưu trữ object { frequency, interval, until }
+}
+
+export interface RepeatRule {
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+  interval: number;
+  until?: Date; // Hoặc string ISO
 }
